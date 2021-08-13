@@ -100,7 +100,7 @@ def tratarResultadoSimplex(n, resultado):
         # O valor é arredondado para inteiro para evitar possíveis erros de precisão
         print(int(round(valorOtimo)))
 
-        # Imprime os valores de fluxos encontados, equivalente à solução da PL primal do problema de max flow
+        # Imprime os valores de fluxos encontrados, equivalente à solução da PL primal do problema de max flow
         # e ao certificado de ótimo da dual
         for el in solucao:
             # Os valores são arredondados para inteiros para evitar possíveis erros de precisão
@@ -115,7 +115,7 @@ def tratarResultadoSimplex(n, resultado):
         for el in certificadoReal[:n-2]:
             # Os valores são arredondados para inteiros para evitar possíveis erros de precisão
             # Também, é verificado se o valor é >=1 para reproduzir o comportamento descrito em aula, em que
-            # é verificado se a variável é maior ou igual a 1, e caso seja 1 é atribuído a ela
+            # é verificado se a variável é maior ou igual a 1, e caso seja, 1 é atribuído a ela
             print(int(round(el)>=1), end=' ')
         
         # Imprime a indicação de que o sink não pertence ao corte

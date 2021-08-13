@@ -50,14 +50,9 @@ def resolverPLComAuxiliar(n, m, vetorCusto, restricoes):
 def resolverPL(n, m, vetorCusto, restricoes):
     # Verifica se precisa de uma PL auxiliar
     if verificarPrecisaAuxiliar(restricoes):
-        resolverPLFormaCanonica(n, m, vetorCusto, restricoes)
+        return resolverPLFormaCanonica(n, m, vetorCusto, restricoes)
     else:
-        resolverPLComAuxiliar(n, m, vetorCusto, restricoes)
-
-if __name__ == '__main__':
-    n, m, vetorCusto, restricoes = leitura.lerEntrada()
-
-    resolverPL(n, m, vetorCusto, restricoes)
+        return resolverPLComAuxiliar(n, m, vetorCusto, restricoes)
     
         
 

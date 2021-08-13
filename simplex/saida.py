@@ -36,7 +36,7 @@ def exibirSaidaOtima(tableau, n, m):
     valorOtimo = tableau[0, -1]
 
     # Retorna o resultado
-    return constantes.OTIMA, solucao, certificadoOtima
+    return constantes.OTIMA, valorOtimo, solucao, certificadoOtima
 
 def exibirSaidaIlimitada(tableau, n, m):
     # Procura o índice da coluna que gera o certificado de ilimitada

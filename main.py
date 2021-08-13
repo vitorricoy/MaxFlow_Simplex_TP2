@@ -1,5 +1,6 @@
 import numpy as np
 from simplex.main import resolverPL
+import simplex.constantes as constantes
 
 n, m = input().split()
 n = int(n)
@@ -39,4 +40,25 @@ restricoes = np.concatenate((restricoes, vetorB), axis = 1)
 nRestricoes = len(restricoes)
 nVariaveis = len(vetorCusto)
 
-resolverPL(nRestricoes, nVariaveis, vetorCusto, restricoes)
+resultado = resolverPL(nRestricoes, nVariaveis, vetorCusto, restricoes)
+
+if resultado[0] != constantes.OTIMA:
+    raise 'PL gerada não tem valor ótimo. Erro!'
+else:
+    msgOtima, valorOtimo, solucao, certificado = resultado
+    # Tratar solução com variáveis livres
+    solucaoReal = []
+    for ind in range(0, 2*(n-2), 2):
+        if ind < 2*(n-2):
+            solucaoReal.append(solucao[ind]-solucao[ind+1])
+            ind+=1
+    for ind in range(2*(n-2), len(solucao)):
+        solucaoReal.append(solucao[ind])
+    print(-int(round(valorOtimo)))
+    for el in certificado:
+        print(int(round(el)), end=' ')
+    print()
+    print(1, end = ' ')
+    for el in solucaoReal[:n-2]:
+        print(int(round(el)>=1), end=' ')
+    print(0)

@@ -26,50 +26,42 @@ def lerEntrada():
     # Retorna os valores lidos
     return n, m, capacidades, matrizIncidencia
 
-def construirVetorCusto(n, capacidades):
-    # Preenche o vetor de custo com 0s para as variáveis correspondentes aos vértices
-    # Como as variáveis são livres são criadas y+ e y-
-    vetorCusto = [0 for _ in range(2*(n-2))]
-
-    # Preenche o vetor de custo das variáveis restantes com as capacidades de cada aresta
-    vetorCusto.extend(capacidades.copy().tolist())
-
-    # Nega o vetor de custos, já que esse é um problema de mínimo e deve ser convertido para um problema de máximo
-    vetorCusto = np.negative(np.array(vetorCusto))
+def construirVetorCusto(matrizIncidencia):
+    # Preenche o vetor de custo com a primeira linha da matriz de incidência negada
+    # Isso é feito pois é maximizado o fluxo que sai do source
+    vetorCusto = [-x for x in matrizIncidencia[0]]
+    vetorCusto = np.array(vetorCusto)
 
     # Retorna o vetor de custo
     return vetorCusto
 
-def construirMatrizRestricoes(m, matrizIncidencia):
+def construirMatrizRestricoes(m, capacidades, matrizIncidencia):
     # Constrói a matriz de restrições no formato A|b
     restricoes = []
 
     # Percorre as linhas da matriz de incidência que correspondem aos vértices diferentes do source e sink
-    for linha in matrizIncidencia[1:-1].T:
-        novaLinha = []
-
-        # Insere os elementos de cada linha da matriz de incidência duas vezes: uma vez normal e outra negado
-        # Isso é feito pois as variáveis correspondentes à matriz de incidência são livres, logo é usada a
-        # definição y = y+ - y- sendo que y+ >= 0 e y- >= 0
-        for elemento in linha:
-            novaLinha.append(elemento)
-            novaLinha.append(-elemento)
-
-        # Adiciona a nova linha na lista de restrições
-        restricoes.append(novaLinha)
+    for linha in matrizIncidencia[1:-1]:
+        novaRestricao = linha.copy().tolist()
+        novaRestricaoNegada = [-x for x in linha]
+        
+        # Insere 0, pois o vetor b dos vértices é igual a 0
+        novaRestricao.append(0)
+        novaRestricaoNegada.append(0)
+        # Insere cada linha da matriz de incidência como restrição duas vezes: uma vez normal e outra negada. 
+        # Isso é feito para  que a restrição de igualdade seja representada como duas restrições: uma de <= e uma
+        # de >=. Como o simplex recebe apenas <=, a restrição de >= é negada
+        restricoes.append(novaRestricao)
+        restricoes.append(novaRestricaoNegada)
     
-    # Nega os valores adicionados para transformar a restrição de >= em <=
-    restricoes = np.negative(np.array(restricoes))
-
-    # Adiciona a matriz identidade na lateral, negando seus valores para transformar a restrição de >= em <=
-    restricoes = np.concatenate((restricoes, np.negative(np.identity(m))), axis = 1)
-
-    # Adiciona o vetor b na lateral da matriz de restrições, sendo que esse vetor b é igual à primeira linha
-    # da matriz de incidência negada, pois deve ser igual a 1 para cada aresta que sai do source
-    vetorB = np.array([matrizIncidencia[0]]).T
-    restricoes = np.concatenate((restricoes, vetorB), axis = 1)
+    for aresta in range(m):
+        # Adiciona as restrições de capacidade das arestas
+        novaRestricao = np.zeros(m+1)
+        novaRestricao[aresta] = 1
+        novaRestricao[-1] = capacidades[aresta]
+        restricoes.append(novaRestricao)
 
     # Retorna a matriz de restrições
+    restricoes = np.array(restricoes)
     return restricoes
 
 def executarSimplex(vetorCusto, restricoes):
@@ -86,36 +78,41 @@ def executarSimplex(vetorCusto, restricoes):
 def tratarResultadoSimplex(n, resultado):
     # Caso a PL não tenha solução ótima, algum erro aconteceu na geração do problema para o módulo do Simplex
     if resultado[0] != constantes.OTIMA:
-        raise 'PL gerada não tem valor ótimo. Erro!'
+        raise Exception('PL gerada não tem valor ótimo. Erro!')
     else:
         # Caso a PL seja ótima, separa as variáveis de valor ótimo, solução e certificado
         msgOtima, valorOtimo, solucao, certificado = resultado
 
-        # Calcula o valor real da solução, já que existem variáveis livres
-        solucaoReal = []
+        # Calcula o valor real do certificado, já que existem restrições extras, correspondentes às variáveis
+        # livres do dual
+        certificadoReal = []
 
-        # Percorre a solução das variáveis correspondentes aos vértices, que são livres
+        # Percorre os certificados das restrições correspondentes aos vértices, que são duplicadas aos pares
         for ind in range(0, 2*(n-2), 2):
-            # Calcula o valor de y com os valores de y+ e y-, sendo que y = y+ - y-
-            solucaoReal.append(solucao[ind]-solucao[ind+1])
+            # Calcula o valor da solução dual y com os valores de y+ e y-, sendo que y = y+ - y-
+            certificadoReal.append(certificado[ind]-certificado[ind+1])
 
-        # Percorre a solução das variáveis que não são livres
-        for ind in range(2*(n-2), len(solucao)):
-            solucaoReal.append(solucao[ind])
+        # Percorre a solução das restrições correspondentes às arestas
+        for ind in range(2*(n-2), len(certificado)):
+            certificadoReal.append(certificado[ind])
 
-        # Imprime o valor ótimo encontrado. Como a PL é de mínimo o resultado encontrado é negado
+        # Imprime o valor ótimo encontrado. Como a PL é de máximo o resultado encontrado já é correto
         # O valor é arredondado para inteiro para evitar possíveis erros de precisão
-        print(-int(round(valorOtimo)))
+        print(int(round(valorOtimo)))
 
         # Imprime os valores de fluxos encontados, equivalente à solução da PL primal do problema de max flow
-        for el in certificado:
+        # e ao certificado de ótimo da dual
+        for el in solucao:
             # Os valores são arredondados para inteiros para evitar possíveis erros de precisão
             print(int(round(el)), end=' ')
         print()
         
         # Imprime a indicação de que o source pertence ao corte
         print(1, end = ' ')
-        for el in solucaoReal[:n-2]:
+
+        # Imprime as indicações dos cortes, que é a solução da PL dual
+        # São percorridos apenas os valores das restrições correspondentes aos vértices
+        for el in certificadoReal[:n-2]:
             # Os valores são arredondados para inteiros para evitar possíveis erros de precisão
             # Também, é verificado se o valor é >=1 para reproduzir o comportamento descrito em aula, em que
             # é verificado se a variável é maior ou igual a 1, e caso seja 1 é atribuído a ela
@@ -126,7 +123,7 @@ def tratarResultadoSimplex(n, resultado):
 
 if __name__ == '__main__':
     n, m, capacidades, matrizIncidencia = lerEntrada()
-    vetorCusto = construirVetorCusto(n, capacidades)
-    restricoes = construirMatrizRestricoes(m, matrizIncidencia)
+    vetorCusto = construirVetorCusto(matrizIncidencia)
+    restricoes = construirMatrizRestricoes(m, capacidades, matrizIncidencia)
     resultado = executarSimplex(vetorCusto, restricoes)
     tratarResultadoSimplex(n, resultado)

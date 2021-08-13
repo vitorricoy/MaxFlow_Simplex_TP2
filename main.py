@@ -9,28 +9,34 @@ capacidades = input().split()
 capacidades = list(map(int, capacidades))
 matrizIncidencia = []
 for i in range(n):
-    restricao = input().split()
-    restricao = list(map(int, restricao))
-    matrizIncidencia.append(restricao)
+    linhaMatriz = input().split()
+    linhaMatriz = list(map(int, linhaMatriz))
+    matrizIncidencia.append(linhaMatriz)
 
-vetorCusto = [-x for x in matrizIncidencia[0]]
+matrizIncidencia = np.array(matrizIncidencia)
+
+vetorCusto = [0 for _ in range(2*(n-2))]
+vetorCusto.extend(capacidades.copy())
+vetorCusto = np.negative(np.array(vetorCusto))
+
 restricoes = []
-for linha in matrizIncidencia[1:-1]:
-    novaLinha = linha.copy()
-    novaLinha.append(0)
+for linha in matrizIncidencia[1:-1].T:
+    novaLinha = []
+    for elemento in linha:
+        novaLinha.append(-elemento)
+        novaLinha.append(elemento)
     restricoes.append(novaLinha)
-    restricoes.append([-x for x in novaLinha])
 
-for i in range(m):
-    vetorTemp = np.zeros(m+1)
-    vetorTemp[i] = 1
-    vetorTemp[-1] = capacidades[i]
-    restricoes.append(vetorTemp)
-
-vetorCusto = np.array(vetorCusto)
 restricoes = np.array(restricoes)
 
+# Adiciona a matriz identidade na lateral
+restricoes = np.concatenate((restricoes, np.negative(np.identity(m))), axis = 1)
+
+# Adiciona o vetor b na lateral da matriz de restrições
+vetorB = np.array([matrizIncidencia[0]]).T
+restricoes = np.concatenate((restricoes, vetorB), axis = 1)
+
 nRestricoes = len(restricoes)
-nVariaveis = m
+nVariaveis = len(vetorCusto)
 
 resolverPL(nRestricoes, nVariaveis, vetorCusto, restricoes)

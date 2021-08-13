@@ -35,16 +35,8 @@ def exibirSaidaOtima(tableau, n, m):
     # Obtém o valor objetivo ótimo a partir do tableau
     valorOtimo = tableau[0, -1]
 
-    # Imprime o resultado no formato pedido
-    print('otima')
-    print("{:.7f}".format(valorOtimo), end = ' ')
-    print()
-    for el in solucao:
-        print("{:.7f}".format(el), end = ' ')
-    print()
-    for el in certificadoOtima:
-        print("{:.7f}".format(el), end = ' ')
-    print()
+    # Retorna o resultado
+    return constantes.OTIMA, solucao, certificadoOtima
 
 def exibirSaidaIlimitada(tableau, n, m):
     # Procura o índice da coluna que gera o certificado de ilimitada
@@ -94,30 +86,21 @@ def exibirSaidaIlimitada(tableau, n, m):
                                 solucao[c] = tableau[l+1, -1]
     
     certificadoIlimitada[colunaIlimitada-n] = 1
-    # Imprime o resultado no formato pedido
-    print('ilimitada')
-    for el in solucao:
-        print("{:.7f}".format(el), end = ' ')
-    print()
-    for el in certificadoIlimitada:
-        print("{:.7f}".format(el), end = ' ')
-    print()
+    # Retorna o resultado
+    return constantes.ILIMITADA, solucao, certificadoIlimitada
 
 def exibirSaidaInviavel(tableau, n):
     # Obtém o certificado de inviabilidade a partir do tableau da PL auxiliar
     certificadoInviabilidade = tableau[0, 0:n]
 
-    # Imprime o resultado no formato pedido
-    print('inviavel')
-    for el in certificadoInviabilidade:
-        print("{:.7f}".format(el), end = ' ')
-    print()
+    # Retorna o resultado
+    return constantes.INVIAVEL, certificadoInviabilidade
 
 def saidaSimplex(resultado, tableau, n, m):
     if resultado == constantes.OTIMA:
-        exibirSaidaOtima(tableau, n, m)
+        return exibirSaidaOtima(tableau, n, m)
     else:
         if resultado == constantes.ILIMITADA:
-            exibirSaidaIlimitada(tableau, n, m)
+            return exibirSaidaIlimitada(tableau, n, m)
         else:
-            exibirSaidaInviavel(tableau, n)
+            return exibirSaidaInviavel(tableau, n)

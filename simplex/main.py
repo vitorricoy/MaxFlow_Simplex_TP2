@@ -22,8 +22,8 @@ def resolverPLFormaCanonica(n, m, vetorCusto, restricoes):
     # Resolve o simplex
     resultado, tableauFinal = simplex.resolverSimplex(tableau, n, n+m)
 
-    # Imprime a saída com base no resultado do simplex
-    saida.saidaSimplex(resultado, tableauFinal, n, m)
+    # Retorna a saída com base no resultado do simplex
+    return saida.saidaSimplex(resultado, tableauFinal, n, m)
 
 def resolverPLComAuxiliar(n, m, vetorCusto, restricoes):
     # É necessário resolver a PL auxiliar para encontrar uma base viável
@@ -34,8 +34,8 @@ def resolverPLComAuxiliar(n, m, vetorCusto, restricoes):
 
     # Se o tableau auxiliar indicou que a PL é inviável
     if verificarPLAuxiliarInviavel(tableau):
-        # Imprime a saída com base no resultado da PL auxiliar
-        saida.saidaSimplex(constantes.INVIAVEL, tableau, n, m)
+        # Retorna a saída com base no resultado da PL auxiliar
+        return saida.saidaSimplex(constantes.INVIAVEL, tableau, n, m)
     else:
         # Converte o resultado do simplex no tableau auxiliar para um tableau
         # do problema original
@@ -44,8 +44,8 @@ def resolverPLComAuxiliar(n, m, vetorCusto, restricoes):
         # Resolve o tableau obtido
         resultado, tableauFinal = simplex.resolverSimplex(tableau, n, n+m)
 
-        # Imprime a saída com base no resultado do simplex
-        saida.saidaSimplex(resultado, tableauFinal, n, m)
+        # Retorna a saída com base no resultado do simplex
+        return saida.saidaSimplex(resultado, tableauFinal, n, m)
 
 def resolverPL(n, m, vetorCusto, restricoes):
     # Verifica se precisa de uma PL auxiliar
